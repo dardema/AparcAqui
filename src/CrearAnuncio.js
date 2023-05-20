@@ -1,22 +1,25 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View, Button, Image,TextInput, TouchableOpacity, FlatList, Modal } from "react-native";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { doc, setDoc } from "firebase/firestore";
+import {db} from './firebase';
 
 function CrearAnuncio() {
   
-    const [coche, setCoche] = useState('');
+    const [tamcoche, setTamCoche] = useState('');
     const [hora, setHora] = useState('');
     const [ubicacion, setUbicacion] = useState('');
     const [tipoaparc, setTipoaparc] = useState('');
+
   
     const handleLocationPress = () => {
       // Aquí podrías implementar la lógica para obtener la ubicación del usuario
     };
   
     const handleSubmit = () => {
-      
+      console.log({tamcoche,hora,tipoaparc});
     };
-  
+
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Anuncio</Text>
@@ -26,8 +29,8 @@ function CrearAnuncio() {
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              value={coche}
-              onChangeText={setCoche}
+              value={tamcoche}
+              onChangeText={setTamCoche}
               placeholder="Selecciona un tipo de coche"
             />
           </View>
@@ -49,14 +52,8 @@ function CrearAnuncio() {
               placeholder="Selecciona tipo aparcamiento"
             />
           </View>
+          <View>
           <Text style={styles.label}>Ubicación actual:</Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={ubicacion}
-              onChangeText={setUbicacion}
-              placeholder="Introduce tu ubicación"
-            />
             <TouchableOpacity onPress={handleLocationPress}>
               <MaterialCommunityIcons name="map-marker" size={24} color="gray" />
             </TouchableOpacity>

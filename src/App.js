@@ -1,12 +1,10 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Button, Image,TextInput, TouchableOpacity, FlatList, Modal } from "react-native";
+import { StyleSheet, View, Button} from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import MapView, { Marker } from 'react-native-maps';
 
 import CrearAnuncio from './CrearAnuncio';
 import BuscarAnuncio from './BuscarAnuncio';
