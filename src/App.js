@@ -1,7 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useEffect, useState } from "react";
-import { StyleSheet, View, Button} from "react-native";
+import { StyleSheet, View, Button, Image, Text } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -12,11 +12,6 @@ import Perfil from './Perfil';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// Aquí están tus vistas de Crear Anuncio, Buscar Anuncio y Perfil
-
-
-
-
 const Tab = createBottomTabNavigator();
 
 export default function App() {
@@ -25,9 +20,9 @@ export default function App() {
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     expoClientId: "564036936231-vc7jue9j8nee8k25chttq79rq4oprc90.apps.googleusercontent.com",
-    androidClientId:"564036936231-edgdug0o0scmb8hn52g1sa9f37psunv5.apps.googleusercontent.com",
-    iosClientId:"564036936231-7ncdps44lmvi3hm187ae3n2lba31moqv.apps.googleusercontent.com",
-    webClientID:"564036936231-vc7jue9j8nee8k25chttq79rq4oprc90.apps.googleusercontent.com"
+    androidClientId: "564036936231-edgdug0o0scmb8hn52g1sa9f37psunv5.apps.googleusercontent.com",
+    iosClientId: "564036936231-7ncdps44lmvi3hm187ae3n2lba31moqv.apps.googleusercontent.com",
+    webClientID: "564036936231-vc7jue9j8nee8k25chttq79rq4oprc90.apps.googleusercontent.com"
   });
 
   useEffect(() => {
@@ -76,8 +71,10 @@ export default function App() {
     <NavigationContainer>
       {!userInfo ? (
         <View style={styles.container}>
+          <Text style={styles.title}>AparcAquí</Text>
           <Button
             title="Sign in with Google"
+            color="black"
             disabled={!request}
             onPress={() => {
               promptAsync();
@@ -105,8 +102,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 20,
+    fontSize: 48,
     fontWeight: 'bold',
+    color: 'black',
+    textAlign: 'center',
+    marginBottom: 20,
+    textShadowColor: 'gray',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 2,
   },
   separator: {
     marginVertical: 30,
@@ -173,7 +176,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 10,
   },
-  // a partir de aquí es del perfil
   centeredView: {
     flex: 1,
     justifyContent: "center",
