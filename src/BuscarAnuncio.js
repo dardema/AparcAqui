@@ -48,18 +48,6 @@ function BuscarAnuncio() {
           return '';
         }
       };
-  
-      const updateAnuncios = async () => {
-        const updatedAnuncios = await Promise.all(
-          anuncios.map(async anuncio => ({
-            ...anuncio,
-            location: await getAddressFromLatLng(anuncio.latitude, anuncio.longitude),
-          }))
-        );
-        setAnuncios(updatedAnuncios);
-      };
-  
-      updateAnuncios();
     }, []);
   
     return (

@@ -5,42 +5,33 @@ import { doc, setDoc, addDoc, collection } from "firebase/firestore";
 
 import db from './firebase';
 
-function CrearAnuncio() {
+function CrearAnuncio(location) {
 
   const [tipocoche, setTipocoche] = useState('');
   const [horasalida, setHorasalida] = useState('');
   const [direccion, setDireccion] = useState('');
   const [tipoaparc, setTipoaparc] = useState('');
 
-
   const handleLocationPress = () => {
-    // Aquí podrías implementar la lógica para obtener la ubicación del usuario
+    
   };
 
   const handleSubmit = async () => {
-    // Crear un objeto con los datos del formulario
+
     const anuncioData = {
       tipocoche: tipocoche,
       horasalida: horasalida,
       tipoaparc: tipoaparc,
+      longitude: location.location.coords.longitude,
+      latitude: location.location.coords.latitude,
     };
-    /*
-    tipo
-    horasalida
-    tipoaparc
-    ubicacion
-    */
-
 
     try {
-      // Add a new document with a generated id.
       const aparcamientoRef = collection(db, 'aparcamiento');
       await addDoc(aparcamientoRef, anuncioData);
 
-      // Puedes mostrar un mensaje de éxito o redireccionar a otra página
       console.log("Datos guardados exitosamente");
     } catch (error) {
-      // Manejar cualquier error que ocurra durante el proceso de guardado
       console.error("Error al guardar los datos:", error);
     }
   };
@@ -76,12 +67,6 @@ function CrearAnuncio() {
             onChangeText={setTipoaparc}
             placeholder="Selecciona tipo aparcamiento"
           />
-        </View>
-        <View>
-          <Text style={styles.label}>Ubicación actual:</Text>
-          <TouchableOpacity onPress={handleLocationPress}>
-            <MaterialCommunityIcons name="map-marker" size={24} color="gray" />
-          </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
           <Text style={styles.buttonText}>Enviar</Text>

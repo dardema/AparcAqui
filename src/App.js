@@ -5,6 +5,7 @@ import { StyleSheet, View, Button, Image, Text } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Location from 'expo-location';
 
 import CrearAnuncio from './CrearAnuncio';
 import BuscarAnuncio from './BuscarAnuncio';
@@ -17,6 +18,21 @@ const Tab = createBottomTabNavigator();
 export default function App() {
   const [token, setToken] = useState("");
   const [userInfo, setUserInfo] = useState(null);
+  const [location, setLocation] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     expoClientId: "564036936231-vc7jue9j8nee8k25chttq79rq4oprc90.apps.googleusercontent.com",
@@ -63,7 +79,7 @@ export default function App() {
       await AsyncStorage.setItem("@user", JSON.stringify(user));
       setUserInfo(user);
     } catch (error) {
-      // Add your own error handler here
+      console.log("Ha ocurrido un error con el inicio de sesión");
     }
   };
 
@@ -83,7 +99,7 @@ export default function App() {
         </View>
       ) : (
         <Tab.Navigator>
-          <Tab.Screen name="Crear Anuncio" component={CrearAnuncio} />
+          <Tab.Screen name="Crear Anuncio" component={() => <CrearAnuncio location={location}/>} />
           <Tab.Screen name="Buscar Anuncio" component={BuscarAnuncio} />
           <Tab.Screen name="Perfil">
             {props => (
