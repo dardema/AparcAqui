@@ -1,20 +1,19 @@
-import { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Button, Image, TextInput, TouchableOpacity, FlatList, Modal } from "react-native";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View, TouchableOpacity, Platform, TextInput } from "react-native";
+import { RadioButton } from 'react-native-paper'; 
 import { doc, setDoc, addDoc, collection } from "firebase/firestore";
+import DateTimePicker from '@react-native-community/datetimepicker'; 
+import RNPickerSelect from "react-native-picker-select"; 
 
 import db from './firebase';
 
 function CrearAnuncio(location) {
 
   const [tipocoche, setTipocoche] = useState('');
-  const [horasalida, setHorasalida] = useState('');
+  const [horasalida, setHorasalida] = useState(new Date());
   const [direccion, setDireccion] = useState('');
-  const [tipoaparc, setTipoaparc] = useState('');
-
-  const handleLocationPress = () => {
-    
-  };
+  const [tipoaparc, setTipoaparc] = useState('gratuito');
+  const [show, setShow] = useState(false);
 
   const handleSubmit = async () => {
 
@@ -36,38 +35,64 @@ function CrearAnuncio(location) {
     }
   };
 
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShow(Platform.OS === 'ios');
+    setHorasalida(currentDate);
+  };
+
+  const showTimepicker = () => {
+    setShow(true);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Anuncio</Text>
       <View style={styles.separator} />
       <View style={styles.form}>
-        <Text style={styles.label}>Tipo de coche:</Text>
+        <Text style={styles.label}>Tamaño de coche:</Text>
+        <RNPickerSelect
+          onValueChange={(value) => setTipocoche(value)}
+          items={[
+              { label: 'Pequeño', value: 'Pequeño' },
+              { label: 'Mediano', value: 'Mediano' },
+              { label: 'Grande', value: 'Grande' },
+          ]}
+          style={pickerSelectStyles}
+          placeholder={{
+            label: 'Selecciona el tamaño de coche...',
+            value: null,
+          }}
+        />
+        <Text style={styles.label}>Hora de salida:</Text>
         <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            value={tipocoche}
-            onChangeText={setTipocoche}
-            placeholder="Selecciona un tipo de coche"
-          />
-        </View>
-        <Text style={styles.label}>Tiempo de salida:</Text>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            value={horasalida}
-            onChangeText={setHorasalida}
-            placeholder="Selecciona un tiempo de llegada"
-          />
+          <TouchableOpacity onPress={showTimepicker} style={styles.input}>
+            <Text style={styles.inputText}>{horasalida.toTimeString()}</Text>
+          </TouchableOpacity>
+          {show && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={horasalida}
+              mode={'time'}
+              is24Hour={true}
+              display="default"
+              onChange={onChange}
+            />
+          )}
         </View>
         <Text style={styles.label}>Tipo de aparcamiento:</Text>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            value={tipoaparc}
-            onChangeText={setTipoaparc}
-            placeholder="Selecciona tipo aparcamiento"
-          />
-        </View>
+        <RadioButton.Group onValueChange={newValue => setTipoaparc(newValue)} value={tipoaparc}>
+          <View style={styles.inputContainer}>
+            <View style={styles.radioButton}>
+              <RadioButton value="gratuito" color="#00BCD4" />
+              <Text style={styles.optionText}>Gratuito</Text>
+            </View>
+            <View style={styles.radioButton}>
+              <RadioButton value="zona azul" color="#00BCD4" />
+              <Text style={styles.optionText}>Zona Azul</Text>
+            </View>
+          </View>
+        </RadioButton.Group>
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
           <Text style={styles.buttonText}>Enviar</Text>
         </TouchableOpacity>
@@ -87,19 +112,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 20,
   },
   separator: {
-    marginVertical: 30,
     height: 1,
     width: '80%',
     backgroundColor: 'gray',
+    marginVertical: 20,
   },
   form: {
-    marginTop: 20,
-  },
-  email: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    width: '80%',
+    alignItems: 'flex-start',
   },
   label: {
     fontSize: 16,
@@ -117,77 +140,48 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderRadius: 5,
     padding: 10,
-    marginRight: 10,
+  },
+  inputText: {
+    color: 'black',
+    fontSize: 16,
+  },
+  radioButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 20,
+  },
+  optionText: {
+    fontSize: 16,
+    marginLeft: 5,
   },
   button: {
-    backgroundColor: 'blue',
+    backgroundColor: '#00BCD4',
     borderRadius: 5,
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     alignSelf: 'flex-end',
+    marginTop: 20,
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  card: {
+});
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
     borderWidth: 1,
-    borderRadius: 15,
-    padding: 15,
-  },
-  image: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginRight: 20,
-  },
-  map: {
-    flex: 1,
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  optionText: {
-    fontSize: 16,
-    marginLeft: 10,
-  },
-  // a partir de aquí es del perfil
-  centeredView: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 22
-  },
-  modalView: {
-    margin: 20,
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 35,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5
-  },
-  openButton: {
-    backgroundColor: "#F194FF",
-    borderRadius: 20,
+    borderColor: 'gray',
+    borderRadius: 5,
     padding: 10,
-    elevation: 2
+    marginBottom: 10,
   },
-  textStyle: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center"
+  inputAndroid: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
   },
-  modalText: {
-    marginBottom: 15,
-    textAlign: "center"
-  }
 });
