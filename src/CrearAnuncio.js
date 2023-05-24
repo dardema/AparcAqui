@@ -11,16 +11,18 @@ function CrearAnuncio(location) {
 
   const [tipocoche, setTipocoche] = useState('');
   const [horasalida, setHorasalida] = useState(new Date());
-  const [direccion, setDireccion] = useState('');
+  const [horasalidaFormatted, setHorasalidaFormatted] = useState('');  // Nuevo estado para la fecha formateada
   const [tipoaparc, setTipoaparc] = useState('gratuito');
+  const [reservado, setReservado] = useState(false);
   const [show, setShow] = useState(false);
 
   const handleSubmit = async () => {
 
     const anuncioData = {
       tipocoche: tipocoche,
-      horasalida: horasalida,
+      horasalida: horasalidaFormatted, // Usamos la fecha formateada
       tipoaparc: tipoaparc,
+      reservado: reservado,
       longitude: location.location.coords.longitude,
       latitude: location.location.coords.latitude,
     };
@@ -34,15 +36,22 @@ function CrearAnuncio(location) {
       console.error("Error al guardar los datos:", error);
     }
   };
+  
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
     setShow(Platform.OS === 'ios');
-    setHorasalida(currentDate);
-  };
+    setHorasalida(currentDate);  // Guardamos la fecha como objeto Date
 
-  const showTimepicker = () => {
-    setShow(true);
+    // Formateamos la fecha y la guardamos en el otro estado
+    let day = ("0" + currentDate.getDate()).slice(-2);
+    let month = ("0" + (currentDate.getMonth() + 1)).slice(-2);
+    let year = currentDate.getFullYear();
+    let hours = ("0" + currentDate.getHours()).slice(-2);
+    let minutes = ("0" + currentDate.getMinutes()).slice(-2);
+
+    let formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
+    setHorasalidaFormatted(formattedDate);
   };
 
   return (
@@ -66,11 +75,7 @@ function CrearAnuncio(location) {
         />
         <Text style={styles.label}>Hora de salida:</Text>
         <View style={styles.inputContainer}>
-          <TouchableOpacity onPress={showTimepicker} style={styles.input}>
-            <Text style={styles.inputText}>{horasalida.toTimeString()}</Text>
-          </TouchableOpacity>
-          {show && (
-            <DateTimePicker
+          <DateTimePicker
               testID="dateTimePicker"
               value={horasalida}
               mode={'time'}
@@ -78,7 +83,7 @@ function CrearAnuncio(location) {
               display="default"
               onChange={onChange}
             />
-          )}
+         
         </View>
         <Text style={styles.label}>Tipo de aparcamiento:</Text>
         <RadioButton.Group onValueChange={newValue => setTipoaparc(newValue)} value={tipoaparc}>

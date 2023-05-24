@@ -19,6 +19,9 @@ export default function App() {
   const [token, setToken] = useState("");
   const [userInfo, setUserInfo] = useState(null);
   const [location, setLocation] = useState(null);
+  const Direccion = props => (
+    <CrearAnuncio location={location}/>
+  );
 
   useEffect(() => {
     (async () => {
@@ -99,7 +102,7 @@ export default function App() {
         </View>
       ) : (
         <Tab.Navigator>
-          <Tab.Screen name="Crear Anuncio" component={() => <CrearAnuncio location={location}/>} />
+          <Tab.Screen name="Crear Anuncio" component={Direccion} />
           <Tab.Screen name="Buscar Anuncio" component={BuscarAnuncio} />
           <Tab.Screen name="Perfil">
             {props => (
