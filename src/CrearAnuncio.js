@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, Platform, TextInput } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Platform, TextInput, Button, Modal, Alert } from "react-native";
 import { RadioButton } from 'react-native-paper'; 
-import { doc, setDoc, addDoc, collection } from "firebase/firestore";
+import { doc, setDoc, addDoc, collection, updateDoc } from "firebase/firestore";
 import DateTimePicker from '@react-native-community/datetimepicker'; 
 import RNPickerSelect from "react-native-picker-select"; 
 
@@ -14,7 +14,8 @@ function CrearAnuncio(location) {
   const [horasalidaFormatted, setHorasalidaFormatted] = useState('');  // Nuevo estado para la fecha formateada
   const [tipoaparc, setTipoaparc] = useState('gratuito');
   const [reservado, setReservado] = useState(false);
-  const [show, setShow] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);  // Nuevo estado para el control del modal
+  const [docId, setDocId] = useState('');  // Nuevo estado para guardar el ID del documento
 
   const handleSubmit = async () => {
 
@@ -29,18 +30,27 @@ function CrearAnuncio(location) {
 
     try {
       const aparcamientoRef = collection(db, 'aparcamiento');
-      await addDoc(aparcamientoRef, anuncioData);
+      const docRef = await addDoc(aparcamientoRef, anuncioData);
 
       console.log("Datos guardados exitosamente");
+      setDocId(docRef.id);  // Guardamos el ID del documento
+      setModalVisible(true);  // Mostramos el modal
     } catch (error) {
       console.error("Error al guardar los datos:", error);
     }
   };
-  
+
+  const closeModal = async () => {
+    // Actualizamos el documento y establecemos reservado a true
+    //await updateDoc(doc(db, "aparcamiento", docId), {
+      //reservado: true
+    //});
+    //Alert.alert("El cambio de coche en el aparcamiento ha sido confirmado.");
+    setModalVisible(false);
+  }
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
-    setShow(Platform.OS === 'ios');
     setHorasalida(currentDate);  // Guardamos la fecha como objeto Date
 
     // Formateamos la fecha y la guardamos en el otro estado
@@ -58,7 +68,28 @@ function CrearAnuncio(location) {
     <View style={styles.container}>
       <Text style={styles.title}>Anuncio</Text>
       <View style={styles.separator} />
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          Alert.alert("Modal has been closed.");
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Tamaño de coche: {tipocoche}</Text>
+            <Text style={styles.modalText}>Hora de salida: {horasalidaFormatted}</Text>
+            <Text style={styles.modalText}>Tipo de aparcamiento: {tipoaparc}</Text>
+            <Button title="Cerrar y Confirmar" onPress={closeModal} />
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.form}>
+        
         <Text style={styles.label}>Tamaño de coche:</Text>
         <RNPickerSelect
           onValueChange={(value) => setTipocoche(value)}
@@ -73,6 +104,7 @@ function CrearAnuncio(location) {
             value: null,
           }}
         />
+         
         <Text style={styles.label}>Hora de salida:</Text>
         <View style={styles.inputContainer}>
           <DateTimePicker
@@ -85,6 +117,7 @@ function CrearAnuncio(location) {
             />
          
         </View>
+        
         <Text style={styles.label}>Tipo de aparcamiento:</Text>
         <RadioButton.Group onValueChange={newValue => setTipoaparc(newValue)} value={tipoaparc}>
           <View style={styles.inputContainer}>
@@ -172,6 +205,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center"
+  }
 });
 
 const pickerSelectStyles = StyleSheet.create({

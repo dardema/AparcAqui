@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Button, Text, Modal, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Button, Text, Modal, TouchableOpacity, Linking, Alert } from "react-native";
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore'; // import updateDoc
 
@@ -78,11 +78,26 @@ function ModalReserva({modalVisible, props, setModalVisible}) {
     return null;
   }
 
-  console.log(props.horasalida);
+  const handleOpenMaps = () => {
+    const url = `http://maps.google.com/?q=${props.latitude},${props.longitude}`;
+    Linking.openURL(url);
+  };
+
+  const handleCloseModal = () => {
+    Alert.alert(
+      "Cerrar Anuncio",
+      "Al cerrar el anuncio confirmas el intercambio de aparcamiento",
+      [
+        { text: "No", style: "cancel" },
+        { text: "Sí", onPress: () => setModalVisible(false) },
+      ]
+    );
+  };
+
   return (
     <Modal
       animationType="slide"
-      transparent={true}
+      transparent={false}
       visible={modalVisible}
     >
       <View style={styles.modalView}>
@@ -93,13 +108,17 @@ function ModalReserva({modalVisible, props, setModalVisible}) {
         <Text>Hora de salida:</Text>
         <Text>{props.horasalida}</Text>
         <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => {
-              setModalVisible(false);
-            }}
-          >
-            <Text style={styles.closeButtonText}>Cerrar</Text>
-          </TouchableOpacity>
+          style={styles.mapsButton}
+          onPress={handleOpenMaps}
+        >
+          <Text style={styles.mapsButtonText}>Abrir en Google Maps</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={handleCloseModal}
+        >
+          <Text style={styles.closeButtonText}>Cerrar</Text>
+        </TouchableOpacity>
       </View>
     </Modal>
   );
@@ -119,14 +138,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'white',
-    margin: 20,
+    margin: 0, // Llena toda la pantalla
+  },
+  mapsButton: {
+    backgroundColor: "#2196F3",
     borderRadius: 20,
-    padding: 35,
+    padding: 10,
+    marginTop: 10,
+  },
+  mapsButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center"
   },
   closeButton: {
     backgroundColor: "#2196F3",
     borderRadius: 20,
     padding: 10,
+    marginTop: 10,
   },
   closeButtonText: {
     color: "white",
