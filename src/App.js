@@ -6,10 +6,12 @@ import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from 'expo-location';
+import { collection, addDoc } from "firebase/firestore";
 
 import CrearAnuncio from './CrearAnuncio';
 import BuscarAnuncio from './BuscarAnuncio';
 import Perfil from './Perfil';
+import db from './firebase';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -81,6 +83,11 @@ export default function App() {
       const user = await response.json();
       await AsyncStorage.setItem("@user", JSON.stringify(user));
       setUserInfo(user);
+
+      // Saving user info to Firebase
+      const userRef = collection(db, 'usuarios');
+      await addDoc(userRef, user);
+
     } catch (error) {
       console.log("Ha ocurrido un error con el inicio de sesión");
     }
