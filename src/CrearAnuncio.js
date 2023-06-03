@@ -1,27 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, Platform, TextInput, Button, Modal, Alert } from "react-native";
-import { RadioButton } from 'react-native-paper'; 
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Button, Modal, Alert } from "react-native";
+import { RadioButton } from 'react-native-paper';
 import { doc, setDoc, addDoc, collection, updateDoc } from "firebase/firestore";
-import DateTimePicker from '@react-native-community/datetimepicker'; 
-import RNPickerSelect from "react-native-picker-select"; 
+import DateTimePicker from '@react-native-community/datetimepicker';
+import RNPickerSelect from "react-native-picker-select";
 
 import db from './firebase';
 
 function CrearAnuncio(location) {
-
   const [tipocoche, setTipocoche] = useState('');
   const [horasalida, setHorasalida] = useState(new Date());
-  const [horasalidaFormatted, setHorasalidaFormatted] = useState('');  // Nuevo estado para la fecha formateada
+  const [horasalidaFormatted, setHorasalidaFormatted] = useState('');
   const [tipoaparc, setTipoaparc] = useState('gratuito');
   const [reservado, setReservado] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);  // Nuevo estado para el control del modal
-  const [docId, setDocId] = useState('');  // Nuevo estado para guardar el ID del documento
+  const [modalVisible, setModalVisible] = useState(false);
+  const [docId, setDocId] = useState('');
 
   const handleSubmit = async () => {
-
     const anuncioData = {
       tipocoche: tipocoche,
-      horasalida: horasalidaFormatted, // Usamos la fecha formateada
+      horasalida: horasalidaFormatted,
       tipoaparc: tipoaparc,
       reservado: reservado,
       longitude: location.location.coords.longitude,
@@ -33,8 +31,8 @@ function CrearAnuncio(location) {
       const docRef = await addDoc(aparcamientoRef, anuncioData);
 
       console.log("Datos guardados exitosamente");
-      setDocId(docRef.id);  // Guardamos el ID del documento
-      setModalVisible(true);  // Mostramos el modal
+      setDocId(docRef.id);
+      setModalVisible(true);
     } catch (error) {
       console.error("Error al guardar los datos:", error);
     }
@@ -51,9 +49,8 @@ function CrearAnuncio(location) {
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
-    setHorasalida(currentDate);  // Guardamos la fecha como objeto Date
+    setHorasalida(currentDate);
 
-    // Formateamos la fecha y la guardamos en el otro estado
     let day = ("0" + currentDate.getDate()).slice(-2);
     let month = ("0" + (currentDate.getMonth() + 1)).slice(-2);
     let year = currentDate.getFullYear();
@@ -87,52 +84,55 @@ function CrearAnuncio(location) {
           </View>
         </View>
       </Modal>
+     
+    
+  <View style={styles.form}>
+     
+  <Text style={[styles.label, { textAlign: 'center' }]}>Tamaño de coche:</Text>
+  
+  <View style={styles.inputContainer}>
+    <RNPickerSelect
+      onValueChange={(value) => setTipocoche(value)}
+      items={[
+        { label: 'Pequeño', value: 'Pequeño' },
+        { label: 'Mediano', value: 'Mediano' },
+        { label: 'Grande', value: 'Grande' },
+      ]}
+      style={pickerSelectStyles}
+      placeholder={{
+        label: 'Selecciona el tamaño de coche...',
+        value: null,
+      }}
+    />
+  </View>
 
-      <View style={styles.form}>
-        
-        <Text style={styles.label}>Tamaño de coche:</Text>
-        <RNPickerSelect
-          onValueChange={(value) => setTipocoche(value)}
-          items={[
-              { label: 'Pequeño', value: 'Pequeño' },
-              { label: 'Mediano', value: 'Mediano' },
-              { label: 'Grande', value: 'Grande' },
-          ]}
-          style={pickerSelectStyles}
-          placeholder={{
-            label: 'Selecciona el tamaño de coche...',
-            value: null,
-          }}
-        />
-         
         <Text style={styles.label}>Hora de salida:</Text>
         <View style={styles.inputContainer}>
           <DateTimePicker
-              testID="dateTimePicker"
-              value={horasalida}
-              mode={'time'}
-              is24Hour={true}
-              display="default"
-              onChange={onChange}
-            />
-         
+            testID="dateTimePicker"
+            value={horasalida}
+            mode={'time'}
+            is24Hour={true}
+            display="default"
+            onChange={onChange}
+          />
         </View>
-        
+         
         <Text style={styles.label}>Tipo de aparcamiento:</Text>
         <RadioButton.Group onValueChange={newValue => setTipoaparc(newValue)} value={tipoaparc}>
           <View style={styles.inputContainer}>
             <View style={styles.radioButton}>
-              <RadioButton value="gratuito" color="#00BCD4" />
+              <RadioButton value="Gratuito" color="black" />
               <Text style={styles.optionText}>Gratuito</Text>
             </View>
             <View style={styles.radioButton}>
-              <RadioButton value="zona azul" color="#00BCD4" />
+              <RadioButton value="Zona azul" color="black" />
               <Text style={styles.optionText}>Zona Azul</Text>
             </View>
           </View>
         </RadioButton.Group>
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>Enviar</Text>
+        <TouchableOpacity style={styles.buttonContainer}>
+          <Text style={styles.buttonText} onPress={handleSubmit}>Enviar</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -151,6 +151,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
   },
   separator: {
     height: 1,
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
   },
   form: {
     width: '80%',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   label: {
     fontSize: 16,
@@ -170,6 +171,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center', // Añadido para centrar el contenido horizontalmente
     marginBottom: 10,
   },
   input: {
@@ -178,10 +180,6 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderRadius: 5,
     padding: 10,
-  },
-  inputText: {
-    color: 'black',
-    fontSize: 16,
   },
   radioButton: {
     flexDirection: 'row',
@@ -192,12 +190,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 5,
   },
-  button: {
-    backgroundColor: '#00BCD4',
+  buttonContainer: {
+    backgroundColor: 'black',
     borderRadius: 5,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    alignSelf: 'flex-end',
+    alignSelf: 'center',
     marginTop: 20,
   },
   buttonText: {
@@ -228,7 +226,7 @@ const styles = StyleSheet.create({
   },
   modalText: {
     marginBottom: 15,
-    textAlign: "center"
+    textAlign: "center",
   }
 });
 
