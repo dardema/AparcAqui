@@ -4,13 +4,14 @@ import { RadioButton } from 'react-native-paper';
 import { doc, setDoc, addDoc, collection, updateDoc } from "firebase/firestore";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import RNPickerSelect from "react-native-picker-select";
+import { Timestamp } from "firebase/firestore";
 
 import db from './firebase';
 
 function CrearAnuncio(location) {
   const [tipocoche, setTipocoche] = useState('');
-  const [horasalida, setHorasalida] = useState(new Date());
-  const [horasalidaFormatted, setHorasalidaFormatted] = useState('');
+  const [horasalida, setHorasalida] = useState('');
+  const [horasalidaFormatted, setHorasalidaFormatted] = useState(new Date());
   const [tipoaparc, setTipoaparc] = useState('gratuito');
   const [reservado, setReservado] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -19,17 +20,18 @@ function CrearAnuncio(location) {
   const handleSubmit = async () => {
     const anuncioData = {
       tipocoche: tipocoche,
-      horasalida: horasalidaFormatted,
+      horasalidaFormatted: Timestamp.fromDate(horasalidaFormatted), // Guarda como timestamp de Firebase
+      horasalida: horasalida,  // Guarda como cadena
       tipoaparc: tipoaparc,
       reservado: reservado,
       longitude: location.location.coords.longitude,
       latitude: location.location.coords.latitude,
     };
-
+  
     try {
       const aparcamientoRef = collection(db, 'aparcamiento');
       const docRef = await addDoc(aparcamientoRef, anuncioData);
-
+  
       console.log("Datos guardados exitosamente");
       setDocId(docRef.id);
       setModalVisible(true);
@@ -49,16 +51,20 @@ function CrearAnuncio(location) {
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
-    setHorasalida(currentDate);
-
+    setHorasalidaFormatted(currentDate);
+  
     let day = ("0" + currentDate.getDate()).slice(-2);
     let month = ("0" + (currentDate.getMonth() + 1)).slice(-2);
     let year = currentDate.getFullYear();
     let hours = ("0" + currentDate.getHours()).slice(-2);
     let minutes = ("0" + currentDate.getMinutes()).slice(-2);
-
+  
     let formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
-    setHorasalidaFormatted(formattedDate);
+    setHorasalida(formattedDate);
+  
+    // Aquí es donde guardarías ambos en tu base de datos
+    // Guarda 'currentDate' como un timestamp
+    // Guarda 'formattedDate' como una cadena
   };
 
   return (
@@ -78,7 +84,7 @@ function CrearAnuncio(location) {
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <Text style={styles.modalText}>Tamaño de coche: {tipocoche}</Text>
-            <Text style={styles.modalText}>Hora de salida: {horasalidaFormatted}</Text>
+            <Text style={styles.modalText}>Hora de salida: {horasalida}</Text>
             <Text style={styles.modalText}>Tipo de aparcamiento: {tipoaparc}</Text>
             <Button title="Cerrar y Confirmar" onPress={closeModal} />
           </View>
@@ -110,7 +116,7 @@ function CrearAnuncio(location) {
         <View style={styles.inputContainer}>
           <DateTimePicker
             testID="dateTimePicker"
-            value={horasalida}
+            value={horasalidaFormatted}
             mode={'time'}
             is24Hour={true}
             display="default"

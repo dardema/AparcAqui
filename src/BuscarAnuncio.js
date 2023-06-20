@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Button, Text, Modal, TouchableOpacity, Linking, Alert } from "react-native";
 import MapView, { Marker, Callout } from 'react-native-maps';
-import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore'; // import updateDoc
+import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 
 import db from './firebase';
 
@@ -24,6 +24,32 @@ function BuscarAnuncio() {
 
     fetchAnuncios();
   }, []);
+
+  useEffect(() => {
+    const checkReserveStatus = async () => {
+      const currentTime = new Date();
+
+      for (let anuncio of anuncios) {
+        // Si el anuncio no está reservado y ha pasado 15 minutos desde la hora de salida
+        if (!anuncio.reservado && currentTime.getTime() - anuncio.horasalidaFormatted.toDate().getTime() >= 10 * 60 * 1000) {
+          // Actualizar reservado a true
+          const anuncioRef = doc(db, 'aparcamiento', anuncio.id);
+          await updateDoc(anuncioRef, {
+            reservado: true
+          });
+          console.log(`El anuncio con id: ${anuncio.id} ha sido eliminado automáticamente.`);
+        }
+      }
+    };
+
+    // Crear un intervalo para verificar el estado de la reserva cada minuto
+    const intervalId = setInterval(checkReserveStatus, 60 * 1000);
+
+    return () => {
+      // Limpiar el intervalo cuando se desmonta el componente
+      clearInterval(intervalId);
+    };
+  }, [anuncios]);
 
   const handleReserve = async (anuncio) => {
     console.log(`Reserva realizada para el anuncio con id: ${anuncio.id}`);
