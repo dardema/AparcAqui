@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Button, Text, Modal, TouchableOpacity, Linking, Alert } from "react-native";
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { format } from "date-fns";
+import { LogBox } from 'react-native';
 
 import db from './firebase';
 
@@ -13,6 +15,7 @@ function BuscarAnuncio() {
   useEffect(() => {
     const fetchAnuncios = async () => {
       const aparcamientoRef = collection(db, 'aparcamiento');
+      LogBox.ignoreAllLogs(true);
       const unsubscribe = onSnapshot(aparcamientoRef, (snapshot) => {
         setAnuncios(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
       });
@@ -31,7 +34,7 @@ function BuscarAnuncio() {
 
       for (let anuncio of anuncios) {
         // Si el anuncio no está reservado y ha pasado 15 minutos desde la hora de salida
-        if (!anuncio.reservado && currentTime.getTime() - anuncio.horasalidaFormatted.toDate().getTime() >= 10 * 60 * 1000) {
+        if (!anuncio.reservado && currentTime.getTime() - anuncio.horasalida.toDate().getTime() >= 2 * 60 * 1000) {
           // Actualizar reservado a true
           const anuncioRef = doc(db, 'aparcamiento', anuncio.id);
           await updateDoc(anuncioRef, {
@@ -85,7 +88,7 @@ function BuscarAnuncio() {
       <Callout onPress={() => handleReserve(anuncio)}>
         <View>
           <Text>{anuncio.tipocoche}</Text>
-          <Text>{`${anuncio.horasalida} - ${anuncio.tipoaparc}`}</Text>
+          <Text>{anuncio.horasalida && anuncio.horasalida.toDate instanceof Function ? `${format(anuncio.horasalida.toDate(), 'dd/MM/yyyy HH:mm')} - ${anuncio.tipoaparc}` : 'N/A'}</Text>
           <Button title="Reservar" onPress={() => handleReserve(anuncio)} />
         </View>
       </Callout>
@@ -115,42 +118,32 @@ function ModalReserva({modalVisible, props, setModalVisible}) {
       "Al cerrar el anuncio confirmas el intercambio de aparcamiento",
       [
         { text: "No", style: "cancel" },
-        { text: "Sí", onPress: () => setModalVisible(false) },
-      ]
+        { text: "Si", onPress: () => setModalVisible(false) } // aquí aseguramos que el modal se cierre
+      ],
     );
   };
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={false}
-      visible={modalVisible}
-    >
-      <View style={styles.modalView}>
-        <Text>Tipo de coche:</Text>
-        <Text>{props.tipocoche}</Text>
-        <Text>Tipo de aparcamiento:</Text>
-        <Text>{props.tipoaparc}</Text>
-        <Text>Hora de salida:</Text>
-        <Text>{props.horasalida}</Text>
-        <TouchableOpacity
-          style={styles.mapsButton}
-          onPress={handleOpenMaps}
+    modalVisible && (
+      <View style={styles.centeredView}>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
         >
-          <Text style={styles.mapsButtonText}>Abrir en Google Maps</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={handleCloseModal}
-        >
-          <Text style={styles.closeButtonText}>Cerrar</Text>
-        </TouchableOpacity>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Confirmación Reserva</Text>
+            <Text>{props.tipocoche}</Text>
+            <Text>{props.horasalida && props.horasalida.toDate instanceof Function ? `${format(props.horasalida.toDate(), 'dd/MM/yyyy HH:mm')} - ${props.tipoaparc}` : 'N/A'}</Text>
+            <Button title="Ver en Maps" onPress={handleOpenMaps}/>
+            <Button title="Cerrar Anuncio" onPress={handleCloseModal}/>
+          </View>
+        </Modal>
       </View>
-    </Modal>
+    )
   );
 }
 
-export default BuscarAnuncio;
 
 const styles = StyleSheet.create({
   container: {
@@ -158,34 +151,53 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+    width: '100%',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.5)', // semi transparent background
   },
   modalView: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-    margin: 0, // Llena toda la pantalla
+    margin: 0,
+    backgroundColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  mapsButton: {
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "bold"
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: 16,
+  },
+  buttons: {
     backgroundColor: "#2196F3",
     borderRadius: 20,
     padding: 10,
+    elevation: 2,
     marginTop: 10,
+    width: '100%', // Make button full width
+    alignItems: 'center' // Center button content
   },
-  mapsButtonText: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center"
-  },
-  closeButton: {
-    backgroundColor: "#2196F3",
-    borderRadius: 20,
-    padding: 10,
-    marginTop: 10,
-  },
-  closeButtonText: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center"
-  }
 });
+
+export default BuscarAnuncio;

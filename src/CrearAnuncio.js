@@ -10,8 +10,7 @@ import db from './firebase';
 
 function CrearAnuncio(location) {
   const [tipocoche, setTipocoche] = useState('');
-  const [horasalida, setHorasalida] = useState('');
-  const [horasalidaFormatted, setHorasalidaFormatted] = useState(new Date());
+  const [horasalida, setHorasalida] = useState(new Date());
   const [tipoaparc, setTipoaparc] = useState('gratuito');
   const [reservado, setReservado] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -20,8 +19,7 @@ function CrearAnuncio(location) {
   const handleSubmit = async () => {
     const anuncioData = {
       tipocoche: tipocoche,
-      horasalidaFormatted: Timestamp.fromDate(horasalidaFormatted), // Guarda como timestamp de Firebase
-      horasalida: horasalida,  // Guarda como cadena
+      horasalida: Timestamp.fromDate(horasalida), // Guarda como timestamp de Firebase
       tipoaparc: tipoaparc,
       reservado: reservado,
       longitude: location.location.coords.longitude,
@@ -41,30 +39,12 @@ function CrearAnuncio(location) {
   };
 
   const closeModal = async () => {
-    // Actualizamos el documento y establecemos reservado a true
-    //await updateDoc(doc(db, "aparcamiento", docId), {
-      //reservado: true
-    //});
-    //Alert.alert("El cambio de coche en el aparcamiento ha sido confirmado.");
     setModalVisible(false);
   }
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
-    setHorasalidaFormatted(currentDate);
-  
-    let day = ("0" + currentDate.getDate()).slice(-2);
-    let month = ("0" + (currentDate.getMonth() + 1)).slice(-2);
-    let year = currentDate.getFullYear();
-    let hours = ("0" + currentDate.getHours()).slice(-2);
-    let minutes = ("0" + currentDate.getMinutes()).slice(-2);
-  
-    let formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
-    setHorasalida(formattedDate);
-  
-    // Aquí es donde guardarías ambos en tu base de datos
-    // Guarda 'currentDate' como un timestamp
-    // Guarda 'formattedDate' como una cadena
+    setHorasalida(currentDate);
   };
 
   return (
@@ -84,13 +64,12 @@ function CrearAnuncio(location) {
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <Text style={styles.modalText}>Tamaño de coche: {tipocoche}</Text>
-            <Text style={styles.modalText}>Hora de salida: {horasalida}</Text>
+            <Text style={styles.modalText}>Hora de salida: {horasalida.toString()}</Text>
             <Text style={styles.modalText}>Tipo de aparcamiento: {tipoaparc}</Text>
             <Button title="Cerrar y Confirmar" onPress={closeModal} />
           </View>
         </View>
       </Modal>
-     
     
   <View style={styles.form}>
      
@@ -116,7 +95,7 @@ function CrearAnuncio(location) {
         <View style={styles.inputContainer}>
           <DateTimePicker
             testID="dateTimePicker"
-            value={horasalidaFormatted}
+            value={horasalida}
             mode={'time'}
             is24Hour={true}
             display="default"
@@ -177,7 +156,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center', // Añadido para centrar el contenido horizontalmente
+    justifyContent: 'center',
     marginBottom: 10,
   },
   input: {
@@ -242,13 +221,13 @@ const pickerSelectStyles = StyleSheet.create({
     borderColor: 'gray',
     borderRadius: 5,
     padding: 10,
-    marginBottom: 10,
+    marginBottom: 20,
   },
   inputAndroid: {
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 5,
     padding: 10,
-    marginBottom: 10,
+    marginBottom: 20,
   },
 });
